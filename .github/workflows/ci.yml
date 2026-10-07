@@ -1,0 +1,65 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_tests:
+        description: Run unit tests (enable only when testing is authorized)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-build-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    name: Build and package Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build release executable
+        run: cargo build --release --locked
+      - name: Package portable downloads
+        run: ./scripts/package.ps1
+      - name: Upload Windows downloads
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ViperTray-windows-x64
+          path: |
+            dist/viper-tray.exe
+            dist/ViperTray-windows-x64.zip
+            dist/viper-tray-source.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  unit-tests:
+    name: Optional unit tests
+    if: github.event_name == 'workflow_dispatch' && inputs.run_tests
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run unit tests without hardware
+        run: cargo test --locked

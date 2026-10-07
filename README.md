@@ -1,88 +1,131 @@
 # Viper Tray
 
-A small **native Rust Windows notification-area app** for the Razer Viper Ultimate. Right-click the battery icon to control the mouse. There is no main window, settings page, webview, Electron runtime, Synapse dependency, or custom driver.
+<p align="center">
+  <img src="assets/icon.svg" alt="Viper Tray" width="128">
+</p>
 
-## Use
+**Control your Razer Viper Ultimate from the Windows tray.** Viper Tray is a small native Rust app that puts battery status, DPI, polling, power settings, and lighting in the icon's right-click menu.
 
-Run `viper-tray.exe`, then right-click its battery icon beside the Windows clock. Windows may place it in the tray overflow initially. Hover for battery percentage, charging status, and connection information.
+No Synapse, Electron, WebView, or bundled application runtime is required.
 
-The app reads the device on connection and displays the last reported settings with their age. Use **Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button. Mouse settings are never automatically overwritten at startup or reconnect.
+## Features
 
-The wired connection is preferred when both the cable and receiver are attached. If the wireless receiver cannot reach the mouse, controls are unavailable and the menu explains that a cable is needed. Cached values are not treated as live confirmation. Closing competing mouse control software can help avoid contention.
+- **Battery at a glance** — battery icon, percentage tooltip, and charging indicator
+- **Polling rate** — switch between 125, 500, and 1,000 Hz
+- **Power settings** — set idle sleep from 1–15 minutes and the low-battery threshold from 5–25%
+- **DPI control** — 100–20,000 DPI, separate X/Y axes, and up to five DPI stages
+- **Logo lighting** — brightness, static colors, spectrum, reactive, and single/dual/random breathing
+- **Saved presets** — five local slots for your mouse settings
+- **Tray-only UI** — every control is in a native menu; no main window or settings panel
+- **Quiet battery checks** — checks wait for an input break and back off after timeouts
+- **Optional startup** — start with Windows through a per-user startup entry
+- **Direct device access** — Windows HID commands using the OpenRazer protocol, without a custom driver
 
-## Tray controls
+## Quick Start
 
-| Menu | Implementation |
-| --- | --- |
-| Battery and charging | Battery-shaped icon, percentage tooltip, charging indicator |
-| Polling rate | 125, 500, and 1,000 Hz |
-| Idle sleep | 1–15 minutes; no unsupported “disable sleep” value |
-| Low-battery threshold | 5%, 10%, 15%, 20%, 25% |
-| DPI | 100–20,000; common values, ±50/100 increments, separate X/Y axes |
-| DPI stages | 1–5 stages, edit each stage, choose active stage |
-| Logo brightness | 0%, 10%, 25%, 50%, 75%, 100% |
-| Logo lighting | Off, static, spectrum, reactive, single/dual/random breathing |
-| Colors | Palette plus separate RGB channel menus |
-| Saved presets | Five local slots; save displayed settings, apply, clear |
-| Battery checks | Manual, 60, 120, or 300 seconds |
-| Start with Windows | Optional per-user startup entry; off until enabled |
-| Diagnostics | Firmware, errors, local log |
+1. Download the Windows artifact from a completed [build in Actions](https://github.com/Dycool/viper-tray/actions/workflows/ci.yml).
+2. Extract `ViperTray-windows-x64.zip` and run `viper-tray.exe`.
+3. Find the battery icon beside the clock; Windows may put it in the tray overflow.
+4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
+5. Choose **Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-Presets are app-managed settings stored on the PC, **not Synapse's five onboard profile slots**. DPI stages and other settings use the documented device storage commands. Refresh before saving a preset if the displayed settings are old. Lighting selections are the app's last acknowledged selections; OpenRazer does not expose an effect readback for this mouse, so the app cannot identify a pre-existing effect selected by another application. Scalar settings and DPI stages are verified by readback. Lighting requires an explicit successful acknowledgement.
+The app has no main window. Keep the included README, documentation, and assets beside the executable for its help links.
 
-## Synapse parity and limits
+> [!NOTE]
+> Live mouse and tray testing is currently paused. The executable has been built, but its runtime behavior has not yet been verified. See [VALIDATION.md](VALIDATION.md).
 
-This is a replacement for the **OpenRazer-supported Viper Ultimate controls**, not complete Synapse parity. These functions are not implemented:
+## Supported Mouse
 
-- Hardware button reassignment, Hypershift, keyboard macros, application-linked profiles, and onboard profile-slot management.
-- Surface calibration, lift-off/landing distance, asymmetric cut-off, and smart tracking.
-- Chroma Studio, screen/audio lighting synchronization, and charging dock controls.
-- Firmware updates, pairing/re-pairing, or memory-repair commands.
+| USB ID | Connection |
+|---|---|
+| `1532:007A` | Razer Viper Ultimate over USB cable |
+| `1532:007B` | Razer Viper Ultimate wireless receiver |
 
-OpenRazer's Viper Ultimate capability list does not expose most of those device commands. Global Windows hooks would affect other pointing devices and would not provide hardware remapping; this app does not silently substitute them. Future protocol additions belong in `device.rs`, with validation in `protocol.rs`, and can be exposed through the same native menus.
+The cable is preferred when both connections are present. If the receiver returns timeouts, connect the mouse by cable and refresh its settings. Unavailable values are shown as unavailable, and writes require a successful device response.
 
-## Avoiding periodic freezes
+Mouse settings are read on connection and are never automatically overwritten at startup or reconnect.
 
-All USB requests run on one worker thread, never on the menu thread. HID handles are released between operations. There is no overlapping battery polling, continuous device reset, or setting reapplication loop.
+## Settings and Presets
 
-Automatic battery checks are deferred while the user is actively providing input, and while idle time suggests the mouse is asleep. A failed check backs off exponentially, up to 15 minutes. Full settings are refreshed on connection or explicit request, not on every battery check. Manual-only mode makes no periodic battery requests; initial connection detection still reads settings once.
+Application preferences, saved presets, and a rotating diagnostic log are stored in:
 
-This does not guarantee that a firmware/receiver will accept wireless commands without stutter. In the development session the receiver returned timeouts while wired commands worked. **Live verification of this Rust application has been postponed at the owner's request.**
+```text
+%APPDATA%\ViperTray
+```
 
-## Portable build
+Presets are saved on the PC, not in Synapse's onboard profile slots. Refresh before saving if the displayed values are old. Lighting menus show this app's last acknowledged selection; they cannot read back an effect previously selected by another app.
 
-Windows 10/11 x64, stable Rust (2024 edition), and MSVC build tools are required.
+**Start with Windows** adds the executable to the standard per-user startup registry entry. Disable that option, exit the app, and delete the portable folder to uninstall.
+
+There is no telemetry, cloud account, network access, or background service.
+
+## Building from Source
+
+Requirements:
+
+- Windows 10/11 x64
+- stable Rust with Rust 2024 edition support
+- current Windows SDK and MSVC build tools
+
+Build:
 
 ```powershell
 cargo build --release --locked
 ```
 
-The executable is `target\release\viper-tray.exe`. A prepared portable folder is placed in `dist\ViperTray` during local packaging. Keep its README next to the executable for the tray's help action.
+The executable is created at:
 
-For maintainers, when testing is authorized:
-
-```powershell
-cargo test --locked
-cargo clippy --all-targets --locked -- -D warnings
-target\release\viper-tray.exe --diagnose --output mouse-diagnostics.json
+```text
+target\release\viper-tray.exe
 ```
 
-`--diagnose` performs read-only mouse queries and exits without creating a tray icon. It does not modify settings. It returns a failing exit code if the primary settings query cannot reach the mouse. Individual unsupported/failed fields remain unavailable and are reported in the JSON.
+Create the portable ZIP, source archive, and checksums:
 
-## Settings and privacy
+```powershell
+./scripts/package.ps1
+```
 
-App preferences, presets and a rotating diagnostic log live in `%APPDATA%\ViperTray`. There is no network access, telemetry, cloud account, or background service. The app connects only to USB vendor `1532`, product `007A` (wired) or `007B` (receiver), interface 0 / mouse usage. Multiple matching devices of the same connection type are rejected rather than picking one arbitrarily.
+## GitHub Workflows
 
-The optional startup entry is `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ViperTray`. Disable **Start with Windows**, exit the app, and delete the portable folder to uninstall. Delete `%APPDATA%\ViperTray` if you also want to remove presets and logs.
+- **Windows build** — builds and packages pushes to `main`, pull requests, and manual runs; uploads the executable, portable ZIP, source ZIP, and checksums.
+- **Draft release** — pushing a version tag such as `v0.1.0` builds the matching Cargo version and creates a draft GitHub release with the same downloads.
+- **Optional unit tests** — manually run the Windows build with **Run unit tests** enabled when testing is authorized. Tests are off for automatic builds and releases while testing is paused.
 
-Applying a preset is a sequence of acknowledged writes. If a later write fails, earlier changes may already have reached the mouse; the app stops and reports the failure. It does not claim a transaction or roll back to guessed values.
+Workflows do not launch the tray app or perform hardware queries. Tags create drafts so the downloads can be reviewed before publication.
 
-## Development status
+## How It Works
 
-The initial seven protocol/configuration tests passed before the owner paused further testing. Subsequent code edits and the executable are build-checked only. No Rust-app mouse queries, live settings changes, tray launch, or interactive menu tests have been performed after that pause. See `VALIDATION.md` for the pending checklist.
+```text
+Native tray menu
+        ↓
+Single USB worker
+        ↓
+OpenRazer feature reports over Windows HID
+        ↓
+Device acknowledgement + settings readback
+```
 
-## Credits and license
+Battery checks are deferred during active input and while the mouse appears asleep. Timeouts increase the interval up to 15 minutes. Choose **Manual only** to disable periodic battery queries.
 
-The Razer protocol is derived from [OpenRazer](https://github.com/openrazer/openrazer). Tray interaction follows the owner's [Corsair Elite Display](https://github.com/Dycool/corsair-elite-display) reference; no Corsair code is copied. Battery tray behavior was inspired by [RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar).
+## Known Limitations
 
-GPL-2.0-or-later. See `LICENSE` and `THIRD_PARTY_NOTICES.md`.
+- Windows 10/11 x64 and the Viper Ultimate only.
+- Button remapping, macros, Hypershift, surface calibration, lift-off/landing distance, and onboard profile-slot management are not implemented.
+- Chroma Studio synchronization, charging dock controls, pairing, and firmware updates are not implemented.
+- Idle sleep can be extended to 15 minutes; there is no supported complete sleep-disable command.
+- Wireless commands may time out on some receiver/firmware combinations. Competing mouse utilities can also interfere with access.
+- A preset applies several settings in sequence. If a later write fails, earlier changes may already have reached the mouse.
+
+See [device notes](docs/device-notes.md) for the full controls, protocol behavior, diagnostics, and feature boundaries.
+
+## Acknowledgments
+
+- [OpenRazer](https://github.com/openrazer/openrazer) for the device protocol and Viper Ultimate capability documentation.
+- [RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar) for the battery tray app inspiration.
+- [Corsair Elite Display](https://github.com/Dycool/corsair-elite-display) for the native tray interaction reference.
+
+Razer, Viper, and Synapse are trademarks of their respective owner. This project is independent and is not affiliated with or endorsed by Razer.
+
+## License
+
+Viper Tray is released under **GPL-2.0-or-later**. Dependencies retain their own licenses and copyright notices; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
