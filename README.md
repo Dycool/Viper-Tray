@@ -124,7 +124,6 @@ See [device notes](docs/device-notes.md) for the full controls, protocol behavio
 
 - [OpenRazer](https://github.com/openrazer/openrazer) for the device protocol and Viper Ultimate capability documentation.
 - [RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar) for the battery tray app inspiration and the reused battery icon artwork.
-- [Corsair Elite Display](https://github.com/Dycool/corsair-elite-display) for the native tray interaction reference.
 
 Razer, Viper, and Synapse are trademarks of their respective owner. This project is independent and is not affiliated with or endorsed by Razer.
 

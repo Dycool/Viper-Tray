@@ -91,7 +91,7 @@ Twelve software tests pass. The wireless suite exercised 512 menu-generated hard
 
 ## Credits and license
 
-The Razer protocol is derived from [OpenRazer](https://github.com/openrazer/openrazer). Tray interaction follows the owner's [Corsair Elite Display](https://github.com/Dycool/corsair-elite-display) reference; no Corsair code is copied. Battery tray behavior was inspired by [RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar).
+The Razer protocol is derived from [OpenRazer](https://github.com/openrazer/openrazer). Battery tray behavior was inspired by [RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar).
 
 GPL-2.0-or-later. See [LICENSE](../LICENSE) and [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
