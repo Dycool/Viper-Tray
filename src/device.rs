@@ -61,8 +61,9 @@ impl Mouse {
         self.dev
             .send_feature_report(&q)
             .map_err(|e| format!("USB write: {e}"))?;
-        for _ in 0..8 {
-            thread::sleep(Duration::from_millis(80));
+        for attempt in 0..8 {
+            // Try the acknowledgement promptly; back off only if the device is busy.
+            thread::sleep(Duration::from_millis(if attempt == 0 { 10 } else { 80 }));
             let mut b = [0; 91];
             let n = self
                 .dev

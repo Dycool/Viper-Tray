@@ -50,7 +50,6 @@ struct App {
     revision: u64,
     pending: bool,
     pending_lighting: Option<Option<Lighting>>,
-    last_balloon: Option<String>,
 }
 impl App {
     fn new() -> Self {
@@ -69,7 +68,6 @@ impl App {
             revision: u64::MAX,
             pending: false,
             pending_lighting: None,
-            last_balloon: None,
         }
     }
     fn notify_data(&self) -> NOTIFYICONDATAW {
@@ -92,16 +90,6 @@ impl App {
         self.revision = u64::MAX;
         self.update();
     }
-    fn balloon(&mut self, message: &str) {
-        let mut n = self.notify_data();
-        n.uFlags = NIF_INFO;
-        n.dwInfoFlags = NIIF_INFO;
-        copy(&mut n.szInfoTitle, "Viper Tray");
-        copy(&mut n.szInfo, message);
-        unsafe {
-            Shell_NotifyIconW(NIM_MODIFY, &n);
-        }
-    }
     fn update(&mut self) {
         let (s, rev, busy) = {
             let st = self.worker.state.lock().unwrap();
@@ -120,11 +108,6 @@ impl App {
                 }
             } else {
                 self.pending_lighting = None;
-            }
-            let message = s.error.as_deref().unwrap_or(&s.note);
-            if !message.is_empty() && self.last_balloon.as_deref() != Some(message) {
-                self.last_balloon = Some(message.into());
-                self.balloon(message);
             }
         }
         let fresh = make_icon(s.battery, s.charging.unwrap_or(false), s.accessible);
@@ -172,7 +155,6 @@ impl App {
     fn save_config(&mut self) {
         if let Err(e) = self.config.save() {
             config::log(&e);
-            self.balloon(&format!("Could not save app preferences: {e}"));
         }
     }
     fn item(&mut self, menu: HMENU, label: &str, action: Action, enabled: bool, checked: bool) {
@@ -655,7 +637,7 @@ impl App {
             }
             Action::Startup => {
                 if let Err(e) = set_startup(!startup_enabled()) {
-                    self.balloon(&e);
+                    self.record_error(&e);
                 }
             }
             Action::Save(i) => {
@@ -664,9 +646,8 @@ impl App {
                     Ok(p) => {
                         self.config.presets[i] = Some(p);
                         self.save_config();
-                        self.balloon(&format!("Saved preset {}", i + 1));
                     }
-                    Err(e) => self.balloon(&e),
+                    Err(e) => self.record_error(&e),
                 }
             }
             Action::Load(i) => {
@@ -696,7 +677,7 @@ impl App {
                 if let Some(p) = p.filter(|p| p.exists()) {
                     open(&p.to_string_lossy());
                 } else {
-                    self.balloon("Polling, sleep, DPI stages and logo lighting are supported. Button mappings, Hypershift, macros and surface calibration are not exposed by OpenRazer for this mouse.");
+                    open("https://github.com/Dycool/viper-tray#readme");
                 }
             }
             Action::Exit => unsafe {
@@ -704,8 +685,13 @@ impl App {
             },
         }
     }
+    fn record_error(&mut self, error: &str) {
+        config::log(error);
+        let mut st = self.worker.state.lock().unwrap();
+        st.mouse.error = Some(error.into());
+        st.revision += 1;
+    }
     fn queue(&mut self, c: Command) {
-        self.last_balloon = None;
         self.pending = true;
         {
             let mut st = self.worker.state.lock().unwrap();
@@ -715,7 +701,7 @@ impl App {
         }
         if self.worker.tx.send(c).is_err() {
             self.pending = false;
-            self.balloon("Mouse worker stopped. Restart Viper Tray.");
+            self.record_error("Mouse worker stopped. Restart Viper Tray.");
         }
     }
 }
@@ -856,7 +842,10 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
     let Ok(mut app) = cell.try_borrow_mut() else {
         // Popup tracking reenters the owner window for native menu painting.
         // Let Windows process those messages without borrowing App again.
-        if matches!(msg, WM_TIMER | CALLBACK | SHOW_MENU) {
+        if matches!(
+            msg,
+            WM_TIMER | crate::worker::STATE_CHANGED | CALLBACK | SHOW_MENU
+        ) {
             return 0;
         }
         return unsafe { DefWindowProcW(hwnd, msg, w, l) };
@@ -868,6 +857,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
     match msg {
         WM_CREATE => {
             app.hwnd = hwnd;
+            app.worker.set_window(hwnd);
             app.taskbar = unsafe { RegisterWindowMessageW(wide("TaskbarCreated").as_ptr()) };
             app.icon = make_icon(None, false, false);
             app.add_icon();
@@ -876,7 +866,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
             }
             0
         }
-        WM_TIMER => {
+        WM_TIMER | crate::worker::STATE_CHANGED => {
             app.update();
             0
         }

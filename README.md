@@ -29,10 +29,10 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
 5. Choose **Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-The app has no main window. Keep the included README, documentation, and assets beside the executable for its help links.
+The app has no main window and never sends notifications. Keep the included README, documentation, and assets beside the executable for its help links.
 
 > [!NOTE]
-> Wireless settings reads have been verified on a Viper Ultimate, and all seven unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
+> Wireless settings reads have been verified on a Viper Ultimate, and all eight unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
 
 ## Supported Mouse
 
@@ -43,7 +43,7 @@ The app has no main window. Keep the included README, documentation, and assets 
 
 The cable is preferred when both connections are present. If the receiver returns timeouts, connect the mouse by cable and refresh its settings. Unavailable values are shown as unavailable, and writes require a successful device response.
 
-Mouse settings are read on connection and are never automatically overwritten at startup or reconnect.
+Mouse settings are read on connection and are never automatically overwritten at startup or reconnect. Individual changes verify only the changed setting and update the tray as soon as the mouse responds; a full reread is reserved for refresh, reconnect, and error recovery. Errors appear in the menu and diagnostic log without notifications.
 
 ## Settings and Presets
 
