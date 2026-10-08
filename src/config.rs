@@ -158,7 +158,7 @@ mod tests {
         ));
         std::fs::create_dir(&dir).unwrap();
         let path = dir.join("diagnostics.log");
-        for marker in [b'A', b'B', b'C'] {
+        for marker in *b"ABC" {
             std::fs::write(&path, vec![marker; 512_001]).unwrap();
             log_to(&dir, "Recovered");
             let previous = std::fs::read(dir.join("diagnostics.previous.log")).unwrap();
