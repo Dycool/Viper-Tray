@@ -634,10 +634,10 @@ impl App {
             );
             PostMessageW(self.hwnd, WM_NULL, 0, 0);
             DestroyMenu(m);
-            if id > 0 {
-                if let Some(action) = self.actions.get(id as usize - 1).cloned() {
-                    self.act(action);
-                }
+            if id > 0
+                && let Some(action) = self.actions.get(id as usize - 1).cloned()
+            {
+                self.act(action);
             }
         }
     }
@@ -824,7 +824,7 @@ fn make_icon(battery: Option<u8>, charging: bool, available: bool) -> HICON {
         } else {
             [60, 225, 125]
         };
-        let width = ((b as usize * 18 + 99) / 100).min(18);
+        let width = (b as usize * 18).div_ceil(100).min(18);
         rect(6, 10, 6 + width, 22, color);
     } else {
         rect(13, 12, 16, 17, white);

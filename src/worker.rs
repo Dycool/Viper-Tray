@@ -62,7 +62,7 @@ impl Worker {
                         st.busy = true;
                         st.revision += 1;
                     }
-                    let result = Mouse::open().and_then(|m| {
+                    let result = Mouse::open().map(|m| {
                         let result = apply(&m, &c);
                         let mut snap = m.snapshot();
                         match result {
@@ -78,7 +78,7 @@ impl Worker {
                                 snap.error = Some(e);
                             }
                         }
-                        Ok(snap)
+                        snap
                     });
                     let mut st = s.lock().unwrap();
                     match result {

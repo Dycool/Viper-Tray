@@ -32,7 +32,7 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 The app has no main window. Keep the included README, documentation, and assets beside the executable for its help links.
 
 > [!NOTE]
-> Live mouse and tray testing is currently paused. The executable has been built, but its runtime behavior has not yet been verified. See [VALIDATION.md](VALIDATION.md).
+> Wireless settings reads have been verified on a Viper Ultimate, and all seven unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
 
 ## Supported Mouse
 
@@ -89,7 +89,7 @@ Create the portable ZIP, source archive, and checksums:
 
 - **Windows build** — builds and packages pushes to `main`, pull requests, and manual runs; uploads the executable, portable ZIP, source ZIP, and checksums.
 - **Draft release** — pushing a version tag such as `v0.1.0` builds the matching Cargo version and creates a draft GitHub release with the same downloads.
-- **Optional unit tests** — manually run the Windows build with **Run unit tests** enabled when testing is authorized. Tests are off for automatic builds and releases while testing is paused.
+- **Optional unit tests** — manually run the Windows build with **Run unit tests** enabled when testing is authorized. Unit tests are optional on manual builds; automatic builds and releases compile and package the app.
 
 Workflows do not launch the tray app or perform hardware queries. Tags create drafts so the downloads can be reviewed before publication.
 
