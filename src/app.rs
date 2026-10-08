@@ -11,7 +11,6 @@ use std::{
 };
 use windows_sys::Win32::{
     Foundation::*,
-    Graphics::Gdi::*,
     System::{LibraryLoader::GetModuleHandleW, Registry::*, Threading::CreateMutexW},
     UI::{Shell::*, WindowsAndMessaging::*},
 };
@@ -595,7 +594,6 @@ impl App {
         let mut point = POINT::default();
         unsafe {
             GetCursorPos(&mut point);
-            reserve_cascade_space(m, self.hwnd, &mut point);
             SetForegroundWindow(self.hwnd);
             let id = TrackPopupMenu(
                 m,
@@ -679,90 +677,6 @@ impl App {
             self.record_error("Mouse worker stopped. Restart Viper Tray.");
         }
     }
-}
-
-// Reserve the widest complete submenu path, rather than letting a deep
-// submenu reverse direction at the screen edge and cover an earlier menu.
-fn cascade_anchor(cursor: i32, left: i32, right: i32, width: i32) -> i32 {
-    cursor.clamp(left, right.saturating_sub(width).max(left))
-}
-unsafe fn menu_chain_width(menu: HMENU, dc: HDC) -> i32 {
-    let mut width = 80;
-    let mut descendants = 0;
-    for i in 0..unsafe { GetMenuItemCount(menu) }.max(0) as u32 {
-        let mut info = MENUITEMINFOW {
-            cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
-            fMask: MIIM_STRING | MIIM_SUBMENU,
-            ..unsafe { std::mem::zeroed() }
-        };
-        if unsafe { GetMenuItemInfoW(menu, i, 1, &mut info) } == 0 {
-            continue;
-        }
-        let mut text = vec![0u16; info.cch as usize + 1];
-        info.dwTypeData = text.as_mut_ptr();
-        info.cch = text.len() as u32;
-        if unsafe { GetMenuItemInfoW(menu, i, 1, &mut info) } != 0 {
-            let mut size = SIZE::default();
-            if unsafe { GetTextExtentPoint32W(dc, text.as_ptr(), info.cch as i32, &mut size) } != 0
-            {
-                // Include checkmarks, submenu arrows, borders, and theme padding.
-                width = width.max(size.cx + 80);
-            }
-        }
-        if !info.hSubMenu.is_null() {
-            descendants = descendants.max(unsafe { menu_chain_width(info.hSubMenu, dc) });
-        }
-    }
-    width + descendants
-}
-unsafe fn reserve_cascade_space(menu: HMENU, hwnd: HWND, point: &mut POINT) {
-    let monitor = unsafe { MonitorFromPoint(*point, MONITOR_DEFAULTTONEAREST) };
-    let mut info = MONITORINFO {
-        cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-        ..unsafe { std::mem::zeroed() }
-    };
-    if unsafe { GetMonitorInfoW(monitor, &mut info) } == 0 {
-        return;
-    }
-    let dc = unsafe { GetDC(hwnd) };
-    if dc.is_null() {
-        return;
-    }
-    let mut metrics: NONCLIENTMETRICSW = unsafe { std::mem::zeroed() };
-    metrics.cbSize = std::mem::size_of::<NONCLIENTMETRICSW>() as u32;
-    let font = if unsafe {
-        SystemParametersInfoW(
-            SPI_GETNONCLIENTMETRICS,
-            metrics.cbSize,
-            (&mut metrics as *mut NONCLIENTMETRICSW).cast(),
-            0,
-        )
-    } != 0
-    {
-        unsafe { CreateFontIndirectW(&metrics.lfMenuFont) }
-    } else {
-        null_mut()
-    };
-    let old_font = if !font.is_null() {
-        unsafe { SelectObject(dc, font) }
-    } else {
-        null_mut()
-    };
-    let width = unsafe { menu_chain_width(menu, dc) };
-    if !old_font.is_null() {
-        unsafe {
-            SelectObject(dc, old_font);
-        }
-    }
-    if !font.is_null() {
-        unsafe {
-            DeleteObject(font);
-        }
-    }
-    unsafe {
-        ReleaseDC(hwnd, dc);
-    }
-    point.x = cascade_anchor(point.x, info.rcWork.left, info.rcWork.right, width);
 }
 
 const RUN_KEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -1007,26 +921,6 @@ pub fn run() -> Result<()> {
         app.borrow_mut().worker.stop();
         CloseHandle(mutex);
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod layout_tests {
-    use super::cascade_anchor;
-    #[test]
-    fn nested_menus_have_room_on_positive_and_negative_monitors() {
-        for (left, right) in [(0, 1920), (-1920, 0)] {
-            for width in [400, 900, 1400] {
-                for cursor in [left - 100, left + 20, right - 10, right + 100] {
-                    let x = cascade_anchor(cursor, left, right, width);
-                    assert!(x >= left);
-                    assert!(x + width <= right);
-                }
-            }
-        }
-        assert_eq!(cascade_anchor(800, 0, 1920, 900), 800);
-        assert_eq!(cascade_anchor(1900, 0, 1920, 900), 1020);
-        assert_eq!(cascade_anchor(900, 0, 800, 1000), 0);
     }
 }
 
