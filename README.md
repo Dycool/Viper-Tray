@@ -29,7 +29,7 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
 5. Choose **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus. Submenus cascade to the left.
+The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus.
 
 The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
 

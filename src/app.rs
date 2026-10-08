@@ -177,17 +177,7 @@ impl App {
     fn submenu(&self, menu: HMENU, label: &str) -> HMENU {
         unsafe {
             let m = CreatePopupMenu();
-            let mut text = wide(label);
-            // Cascade each level to the left without changing Windows-wide menu preferences.
-            let info = MENUITEMINFOW {
-                cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
-                fMask: MIIM_FTYPE | MIIM_STRING | MIIM_SUBMENU,
-                fType: MFT_STRING | MFT_RIGHTORDER,
-                hSubMenu: m,
-                dwTypeData: text.as_mut_ptr(),
-                ..std::mem::zeroed()
-            };
-            InsertMenuItemW(menu, GetMenuItemCount(menu) as u32, 1, &info);
+            AppendMenuW(menu, MF_POPUP, m as usize, wide(label).as_ptr());
             m
         }
     }
@@ -603,7 +593,7 @@ impl App {
             SetForegroundWindow(self.hwnd);
             let id = TrackPopupMenu(
                 m,
-                TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON | TPM_RIGHTALIGN,
+                TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON,
                 point.x,
                 point.y,
                 0,
