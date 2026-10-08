@@ -60,7 +60,14 @@ impl Default for Config {
         }
     }
 }
+#[cfg(test)]
+pub static TEST_DIRECTORY: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
+
 pub fn directory() -> PathBuf {
+    #[cfg(test)]
+    if let Some(path) = TEST_DIRECTORY.lock().unwrap().clone() {
+        return path;
+    }
     std::env::var_os("APPDATA")
         .map(PathBuf::from)
         .unwrap_or_else(std::env::temp_dir)

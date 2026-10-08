@@ -1,5 +1,5 @@
 use crate::protocol::{self, DpiStages, Effect, Result};
-use hidapi::{HidApi, HidDevice};
+use crate::transport::FeatureDevice;
 use serde::{Deserialize, Serialize};
 use std::{thread, time::Duration};
 
@@ -21,46 +21,24 @@ pub struct Snapshot {
 }
 
 pub struct Mouse {
-    dev: HidDevice,
+    dev: FeatureDevice,
     pub connection: String,
 }
 impl Mouse {
     pub fn open() -> Result<Self> {
-        let api = HidApi::new().map_err(|e| e.to_string())?;
-        for pid in [0x007a, 0x007b] {
-            let devices: Vec<_> = api
-                .device_list()
-                .filter(|d| {
-                    d.vendor_id() == 0x1532
-                        && d.product_id() == pid
-                        && d.interface_number() == 0
-                        && d.usage() == 2
-                })
-                .collect();
-            if devices.len() > 1 {
-                return Err(
-                    "Multiple Viper Ultimate devices found. Connect one mouse at a time.".into(),
-                );
-            }
-            if let Some(d) = devices.first() {
-                return Ok(Self {
-                    dev: d.open_device(&api).map_err(|e| e.to_string())?,
-                    connection: if pid == 0x007a {
-                        "USB cable"
-                    } else {
-                        "Wireless"
-                    }
-                    .into(),
-                });
-            }
-        }
-        Err("Viper Ultimate not connected".into())
+        let (dev, wireless) = FeatureDevice::open_viper()?;
+        Ok(Self {
+            dev,
+            connection: if wireless { "Wireless" } else { "USB cable" }.into(),
+        })
     }
     fn cmd(&self, tid: u8, class: u8, command: u8, args: &[u8], size: usize) -> Result<Vec<u8>> {
+        trace(&format!("send class={class:02x} command={command:02x}"));
         let q = protocol::report(tid, class, command, args, size)?;
         self.dev
             .send_feature_report(&q)
             .map_err(|e| format!("USB write: {e}"))?;
+        trace("feature report sent");
         for attempt in 0..8 {
             // Try the acknowledgement promptly; back off only if the device is busy.
             thread::sleep(Duration::from_millis(if attempt == 0 { 10 } else { 80 }));
@@ -69,6 +47,7 @@ impl Mouse {
                 .dev
                 .get_feature_report(&mut b)
                 .map_err(|e| format!("USB read: {e}"))?;
+            trace("feature response received");
             if let Some(r) = protocol::response(&q, &b[..n])? {
                 return Ok(r);
             }
@@ -225,5 +204,11 @@ impl Mouse {
             s.error = Some(errors.join("; "));
         }
         s
+    }
+}
+
+fn trace(message: &str) {
+    if std::env::var_os("VIPER_TRACE").is_some() {
+        eprintln!("HID: {message}");
     }
 }

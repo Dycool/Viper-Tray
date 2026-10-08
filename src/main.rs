@@ -3,6 +3,7 @@ mod app;
 mod config;
 mod device;
 mod protocol;
+mod transport;
 mod worker;
 fn main() {
     let args: Vec<String> = std::env::args().collect();

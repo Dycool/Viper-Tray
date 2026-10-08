@@ -241,7 +241,7 @@ impl App {
         };
         self.item(m, label, Action::Device(c), enabled, checked);
     }
-    fn menu(&mut self) {
+    fn build_menu(&mut self) -> HMENU {
         self.actions.clear();
         let (s, busy) = {
             let st = self.worker.state.lock().unwrap();
@@ -588,6 +588,10 @@ impl App {
         );
         self.separator(m);
         self.item(m, "Exit", Action::Exit, true, false);
+        m
+    }
+    fn menu(&mut self) {
+        let m = self.build_menu();
         let mut point = POINT::default();
         unsafe {
             GetCursorPos(&mut point);
@@ -1025,3 +1029,7 @@ mod layout_tests {
         assert_eq!(cascade_anchor(900, 0, 800, 1000), 0);
     }
 }
+
+#[cfg(test)]
+#[path = "app_validation.rs"]
+mod validation_tests;

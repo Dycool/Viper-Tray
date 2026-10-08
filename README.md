@@ -1,7 +1,7 @@
-# Viper Tray
+# Viper-Tray
 
 <p align="center">
-  <img src="assets/icon.svg" alt="Viper Tray" width="128">
+  <img src="assets/battery/battery_100.png" alt="Viper-Tray battery icon" width="98">
 </p>
 
 **Control your Razer Viper Ultimate from the Windows tray.** Viper Tray is a small native Rust app that puts battery status, DPI, polling, power settings, and lighting in the icon's right-click menu.
@@ -23,7 +23,7 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 
 ## Quick Start
 
-1. Download the Windows artifact from a completed [build in Actions](https://github.com/Dycool/viper-tray/actions/workflows/ci.yml).
+1. Download the Windows artifact from a completed [build in Actions](https://github.com/Dycool/Viper-Tray/actions/workflows/ci.yml).
 2. Extract `ViperTray-windows-x64.zip` and run `viper-tray.exe`.
 3. Find the battery icon beside the clock; Windows may put it in the tray overflow.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
@@ -34,7 +34,7 @@ The main menu groups controls into **Performance**, **Power**, **Lighting**, **S
 The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
 
 > [!NOTE]
-> Wireless settings reads have been verified on a Viper Ultimate, and all nine unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
+> Tested on a wireless Viper Ultimate: 512 menu-generated hardware commands, all five presets, startup toggling, and the native tray lifecycle. Twelve software tests pass. Lighting is verified by device acknowledgement; visual appearance and long sleep/reconnect behavior require physical observation. See [VALIDATION.md](VALIDATION.md).
 
 ## Supported Mouse
 
@@ -45,7 +45,7 @@ The app has no main window and never sends notifications. The executable is port
 
 The cable is preferred when both connections are present. If the receiver returns timeouts, connect the mouse by cable and refresh its settings. Unavailable values are shown as unavailable, and writes require a successful device response.
 
-Mouse settings are read on connection and are never automatically overwritten at startup or reconnect. Individual changes verify only the changed setting and update the tray as soon as the mouse responds; a full reread is reserved for refresh, reconnect, and error recovery. Errors appear in the menu and diagnostic log without notifications.
+Mouse settings are read on connection and are never automatically overwritten at startup or reconnect. Individual changes verify only the changed setting and update the tray as soon as the mouse responds; a full reread is reserved for refresh, reconnect, and error recovery. Errors appear in the menu and diagnostic log without notifications. Discovery filters Viper interfaces before opening them, and feature requests have a three-second deadline with cancellation.
 
 ## Settings and Presets
 
@@ -91,7 +91,7 @@ Create the portable ZIP, source archive, and checksums:
 
 - **Windows build** — builds and packages pushes to `main`, pull requests, and manual runs; uploads the executable, portable ZIP, source ZIP, and checksums.
 - **Draft release** — pushing a version tag such as `v0.1.0` builds the matching Cargo version and creates a draft GitHub release with the same downloads.
-- **Optional unit tests** — manually run the Windows build with **Run unit tests** enabled when testing is authorized. Unit tests are optional on manual builds; automatic builds and releases compile and package the app.
+- **Tests and checks** — formatting, unit tests, and strict Clippy run automatically on pushes, pull requests, and manual builds. Device and tray integration tests are opt-in and never run in CI.
 
 Workflows do not launch the tray app or perform hardware queries. Tags create drafts so the downloads can be reviewed before publication.
 

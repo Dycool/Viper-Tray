@@ -173,7 +173,7 @@ impl Worker {
                 let idle = input_idle_seconds();
                 let sleep = s.lock().unwrap().mouse.idle.unwrap_or(900) as u64;
                 // Battery queries are deferred during input and after the mouse's idle sleep time.
-                if idle < 2 || idle >= sleep.max(60) {
+                if !battery_query_allowed(idle, sleep) {
                     continue;
                 }
                 match Mouse::open().and_then(|m| m.battery()) {
@@ -299,6 +299,10 @@ fn backoff(interval: u64, failures: u32) -> u64 {
             .min(900)
     }
 }
+fn battery_query_allowed(idle: u64, sleep: u64) -> bool {
+    idle >= 2 && idle < sleep.max(60)
+}
+
 fn input_idle_seconds() -> u64 {
     use windows_sys::Win32::{
         System::SystemInformation::GetTickCount,
@@ -397,6 +401,18 @@ mod tests {
             }
         }
         worker.stop();
+    }
+    #[test]
+    fn battery_queries_wait_for_input_breaks_and_avoid_sleeping_mouse() {
+        for sleep in [60, 300, 900] {
+            assert!(!battery_query_allowed(0, sleep));
+            assert!(!battery_query_allowed(1, sleep));
+            assert!(battery_query_allowed(2, sleep));
+            assert!(battery_query_allowed(sleep - 1, sleep));
+            assert!(!battery_query_allowed(sleep, sleep));
+            assert!(!battery_query_allowed(sleep + 1, sleep));
+        }
+        assert!(!battery_query_allowed(100, 0));
     }
     #[test]
     fn timeout_backoff_is_bounded() {

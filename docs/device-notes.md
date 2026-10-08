@@ -6,7 +6,7 @@ A small **native Rust Windows notification-area app** for the Razer Viper Ultima
 
 Run `viper-tray.exe`, then right-click its battery icon beside the Windows clock. Windows may place it in the tray overflow initially. Hover for battery percentage, charging status, and connection information.
 
-The app reads the device on connection and displays the last reported settings with their age. Use **Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button. Mouse settings are never automatically overwritten at startup or reconnect.
+The app reads the device on connection and displays the last confirmed settings. Use **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button. Mouse settings are never automatically overwritten at startup or reconnect.
 
 The wired connection is preferred when both the cable and receiver are attached. If the wireless receiver cannot reach the mouse, controls are unavailable and the menu explains that a cable is needed. Cached values are not treated as live confirmation. Closing competing mouse control software can help avoid contention.
 
@@ -26,7 +26,7 @@ The wired connection is preferred when both the cable and receiver are attached.
 | Saved presets | Five local slots; save displayed settings, apply, clear |
 | Battery checks | Manual, 60, 120, or 300 seconds |
 | Start with Windows | Optional per-user startup entry; off until enabled |
-| Diagnostics | Firmware, errors, local log |
+| Settings | Refresh mouse settings, battery-check interval, startup |
 
 Presets are app-managed settings stored on the PC, **not Synapse's five onboard profile slots**. DPI stages and other settings use the documented device storage commands. Refresh before saving a preset if the displayed settings are old. Lighting selections are the app's last acknowledged selections; OpenRazer does not expose an effect readback for this mouse, so the app cannot identify a pre-existing effect selected by another application. Scalar settings and DPI stages are verified by readback. Lighting requires an explicit successful acknowledgement.
 
@@ -43,11 +43,11 @@ OpenRazer's Viper Ultimate capability list does not expose most of those device 
 
 ## Avoiding periodic freezes
 
-All USB requests run on one worker thread, never on the menu thread. HID handles are released between operations. There is no overlapping battery polling, continuous device reset, or setting reapplication loop.
+All USB requests run on one worker thread, never on the menu thread. Windows discovery opens only matching Viper control interfaces; unrelated HID devices are not queried. Feature requests use overlapped I/O, a three-second deadline, and cancellation. HID handles are released between operations. There is no overlapping battery polling, continuous device reset, or setting reapplication loop.
 
 Automatic battery checks are deferred while the user is actively providing input, and while idle time suggests the mouse is asleep. A failed check backs off exponentially, up to 15 minutes. Full settings are refreshed on connection or explicit request, not on every battery check. Manual-only mode makes no periodic battery requests; initial connection detection still reads settings once.
 
-This does not guarantee that a firmware/receiver will accept wireless commands without stutter. In the development session the receiver returned timeouts while wired commands worked. **Live verification of this Rust application has been postponed at the owner's request.**
+This does not guarantee that a firmware/receiver will accept wireless commands without stutter. In the development session the receiver returned timeouts while wired commands worked. The wireless command and tray integration results are recorded in [VALIDATION.md](../VALIDATION.md).
 
 ## Portable build
 
@@ -57,9 +57,9 @@ Windows 10/11 x64, stable Rust (2024 edition), and MSVC build tools are required
 cargo build --release --locked
 ```
 
-The executable is `target\release\viper-tray.exe`. Run `scripts/package.ps1` to prepare `dist/ViperTray-windows-x64.zip` with documentation and committed source. Keep its README next to the executable for the tray's help action.
+The executable is `target\release\viper-tray.exe`. Run `scripts/package.ps1` to prepare `dist/ViperTray-windows-x64.zip` with documentation and committed source. The executable is portable; documentation is included in the archive.
 
-For maintainers, when testing is authorized:
+For maintainers (the ordinary tests do not query the mouse):
 
 ```powershell
 cargo test --locked
@@ -68,6 +68,14 @@ target\release\viper-tray.exe --diagnose --output mouse-diagnostics.json
 ```
 
 `--diagnose` performs read-only mouse queries and exits without creating a tray icon. It does not modify settings. It returns a failing exit code if the primary settings query cannot reach the mouse. Individual unsupported/failed fields remain unavailable and are reported in the JSON.
+
+To explicitly exercise real wireless hardware, connect an awake Viper Ultimate and run:
+
+```powershell
+./scripts/test-hardware.ps1
+```
+
+This changes mouse settings temporarily, uses a separate test-settings directory, restores the original readable mouse settings, and preserves the original startup entry. Lighting tests require an original brightness of zero or a known app-saved effect so the appearance can be restored. The runner pauses existing Viper Tray processes and starts them again afterward. Do not use a blanket `--ignored` invocation: the separate recovery test requires an explicitly supplied snapshot file.
 
 ## Settings and privacy
 
@@ -79,7 +87,7 @@ Applying a preset is a sequence of acknowledged writes. If a later write fails, 
 
 ## Development status
 
-The initial seven protocol/configuration tests passed before the owner paused further testing. Subsequent code edits and the executable are build-checked only. No Rust-app mouse queries, live settings changes, tray launch, or interactive menu tests have been performed after that pause. See [VALIDATION.md](../VALIDATION.md) for the pending checklist.
+Twelve software tests pass. The wireless suite exercised 512 menu-generated hardware commands, all five presets, startup toggling, native icon registration/recovery, second-instance handling, and clean exit. The suite found a broad HID-enumeration stall, fixed by filtering Viper paths before opening any devices. See [VALIDATION.md](../VALIDATION.md) for exact coverage and remaining physical checks.
 
 ## Credits and license
 

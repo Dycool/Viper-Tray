@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      run_tests:
-        description: Run unit tests (enable only when testing is authorized)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -51,8 +46,7 @@ jobs:
           retention-days: 14
 
   unit-tests:
-    name: Optional unit tests
-    if: github.event_name == 'workflow_dispatch' && inputs.run_tests
+    name: Tests and checks
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -61,5 +55,11 @@ jobs:
           persist-credentials: false
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Install check components
+        run: rustup component add rustfmt clippy
+      - name: Check formatting
+        run: cargo fmt --check
       - name: Run unit tests without hardware
         run: cargo test --locked
+      - name: Check warnings
+        run: cargo clippy --all-targets --locked -- -D warnings
