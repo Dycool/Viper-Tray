@@ -36,8 +36,6 @@ enum Action {
     Save(usize),
     Load(usize),
     Clear(usize),
-    Logs,
-    Docs,
     Exit,
 }
 struct App {
@@ -557,7 +555,7 @@ impl App {
             );
         }
         self.separator(m);
-        let app_menu = self.submenu(m, "App & help");
+        let app_menu = self.submenu(m, "Settings");
         self.item(
             app_menu,
             "Refresh mouse settings",
@@ -587,22 +585,6 @@ impl App {
             true,
             startup_enabled(),
         );
-        self.separator(app_menu);
-        let p = self.submenu(app_menu, "About & diagnostics");
-        self.label(p, "Viper Tray 0.1.0 · Rust · GPL-2.0-or-later");
-        if let Some(f) = s.firmware {
-            self.label(p, &format!("Firmware: {f}"));
-        }
-        self.label(p, "Button mapping / Hypershift: unavailable");
-        self.label(p, "Surface calibration / lift-off: unavailable");
-        self.item(
-            p,
-            "Feature support & instructions",
-            Action::Docs,
-            true,
-            false,
-        );
-        self.item(p, "Open diagnostic log", Action::Logs, true, false);
         self.separator(m);
         self.item(m, "Exit", Action::Exit, true, false);
         let mut point = POINT::default();
@@ -667,26 +649,6 @@ impl App {
                 self.config.presets[i] = None;
                 self.save_config();
             }
-            Action::Logs => {
-                config::log("Diagnostics opened from tray");
-                let snap = self.worker.state.lock().unwrap().mouse.clone();
-                config::log(&serde_json::to_string(&snap).unwrap_or_default());
-                open(
-                    &config::directory()
-                        .join("diagnostics.log")
-                        .to_string_lossy(),
-                );
-            }
-            Action::Docs => {
-                let p = std::env::current_exe()
-                    .ok()
-                    .and_then(|p| p.parent().map(|p| p.join("README.md")));
-                if let Some(p) = p.filter(|p| p.exists()) {
-                    open(&p.to_string_lossy());
-                } else {
-                    open("https://github.com/Dycool/viper-tray#readme");
-                }
-            }
             Action::Exit => unsafe {
                 PostMessageW(self.hwnd, WM_CLOSE, 0, 0);
             },
@@ -713,18 +675,6 @@ impl App {
     }
 }
 
-fn open(path: &str) {
-    unsafe {
-        ShellExecuteW(
-            null_mut(),
-            wide("open").as_ptr(),
-            wide(path).as_ptr(),
-            null(),
-            null(),
-            SW_SHOWNORMAL,
-        );
-    }
-}
 const RUN_KEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 fn startup_enabled() -> bool {
     unsafe {

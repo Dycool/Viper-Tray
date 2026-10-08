@@ -27,11 +27,11 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 2. Extract `ViperTray-windows-x64.zip` and run `viper-tray.exe`.
 3. Find the battery icon beside the clock; Windows may put it in the tray overflow.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
-5. Choose **App & help → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
+5. Choose **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **App & help**. Lighting effects, colors, and custom RGB values have their own submenus.
+The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus.
 
-The app has no main window and never sends notifications. Keep the included README, documentation, and assets beside the executable for its help links.
+The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
 
 > [!NOTE]
 > Wireless settings reads have been verified on a Viper Ultimate, and all eight unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
