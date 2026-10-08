@@ -29,12 +29,12 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
 5. Choose **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus.
+The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus. The main menu moves inward from the screen edge as needed to leave space for nested menus.
 
 The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
 
 > [!NOTE]
-> Wireless settings reads have been verified on a Viper Ultimate, and all eight unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
+> Wireless settings reads have been verified on a Viper Ultimate, and all nine unit tests pass. Interactive tray and movement testing is in progress. See [VALIDATION.md](VALIDATION.md).
 
 ## Supported Mouse
 

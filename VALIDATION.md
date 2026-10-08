@@ -4,7 +4,7 @@ Testing resumed with the user's authorization on 2026-10-08, with the mouse conn
 
 Verified:
 
-- All eight unit tests pass on Windows: packet framing, response validation, failure/busy handling, independent-axis DPI stages, invalid DPI/stage rejection, lighting payloads, incomplete preset rejection, bounded timeout backoff, and preservation of unrelated cached settings after individual changes (some checks share a test).
+- All nine unit tests pass on Windows: packet framing, response validation, failure/busy handling, independent-axis DPI stages, invalid DPI/stage rejection, lighting payloads, incomplete preset rejection, bounded timeout backoff, and preservation of unrelated cached settings after individual changes (some checks share a test).
 - Formatter and Clippy checks pass; the release executable builds successfully.
 - The Rust diagnostic command successfully reads the wireless receiver: firmware 1.7, battery 100%, not charging, 1,000 Hz polling, 900-second idle sleep, raw low-battery threshold 13, brightness 0, and DPI 3,200 on both axes.
 - Five DPI stages read back as 400, 800, 1,600, 2,400 and 3,200 on both axes, with stage 5 active.
@@ -19,7 +19,7 @@ Responsiveness and notification update:
 - Worker completion posts directly to the tray window instead of waiting for the one-second timer. The timer remains as a fallback during native popup tracking.
 - The first acknowledgement read waits 10 ms; a busy response retains the 80 ms retry delay and bounded retries.
 - An explicitly invoked wireless hardware test reapplied the existing polling rate three times and verified readback. Completion took 246, 230 and 225 ms, including device enumeration and write/readback. The earlier optimized path with the old 80 ms initial pause took 375, 368 and 361 ms. These are three observed samples, not a guarantee for every setting or wireless condition.
-- Eight ordinary tests pass. The hardware test is ignored by default and only runs when explicitly requested. Formatter, strict Clippy and release build pass.
+- Nine ordinary tests pass. The hardware test is ignored by default and only runs when explicitly requested. Formatter, strict Clippy and release build pass.
 
 Pending:
 
@@ -30,3 +30,5 @@ Pending:
 5. Verify icon legibility, checkmarks, error/update messages, and manual-only battery mode.
 
 The wireless readback confirms the configured polling rate; it does not measure USB event frequency or prove that movement is free of freezes.
+
+Menu placement update: the forced-left submenu flag was reverted. The app measures the widest complete menu path using the Windows menu font and moves the main menu inward when necessary to reserve room for the full cascade. A layout test covers screen edges and monitors with negative coordinates. Visual confirmation of nested-menu placement remains pending.
