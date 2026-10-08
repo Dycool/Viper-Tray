@@ -11,7 +11,7 @@ First stable release of the native Windows tray app for the Razer Viper Ultimate
 
 ### Download
 
-Download **ViperTray-windows-x64.zip**, extract it, and run **viper-tray.exe**. Windows 10/11 x64 is required; Synapse and a custom driver are not required. The standalone executable, corresponding source archive, and SHA-256 checksums are also included.
+Download **ViperTray-windows-x64.zip**, extract it, and run **viper-tray.exe**. Windows 10/11 x64 is required; Synapse and a custom driver are not required. The portable ZIP includes the executable, documentation, and corresponding source archive.
 
 ### Verification and limits
 

@@ -54,11 +54,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.2
         with:
           name: ViperTray-${{ github.ref_name }}-windows-x64
-          path: |
-            dist/viper-tray.exe
-            dist/ViperTray-windows-x64.zip
-            dist/viper-tray-source.zip
-            dist/SHA256SUMS.txt
+          path: dist/ViperTray-windows-x64.zip
           if-no-files-found: error
       - name: Create or update draft release
         env:
@@ -66,7 +62,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $assets = @('dist/viper-tray.exe', 'dist/ViperTray-windows-x64.zip', 'dist/viper-tray-source.zip', 'dist/SHA256SUMS.txt')
+          $assets = @('dist/ViperTray-windows-x64.zip')
           $existing = gh release view $env:RELEASE_TAG --json isDraft 2>$null
           if ($LASTEXITCODE -eq 0) {
             if (-not ($existing | ConvertFrom-Json).isDraft) {
@@ -84,10 +80,15 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           $ErrorActionPreference = 'Stop'
+          $release = gh release view $env:RELEASE_TAG --json assets | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not inspect release assets' }
+          if ($release.assets.Count -ne 1 -or $release.assets[0].name -cne 'ViperTray-windows-x64.zip') {
+            throw 'Release must contain only ViperTray-windows-x64.zip'
+          }
           $downloadPath = Join-Path $env:RUNNER_TEMP 'verify-release'
           gh release download $env:RELEASE_TAG --dir $downloadPath
           if ($LASTEXITCODE -ne 0) { throw 'Could not download release assets for verification' }
-          foreach ($name in @('viper-tray.exe', 'ViperTray-windows-x64.zip', 'viper-tray-source.zip', 'SHA256SUMS.txt')) {
+          foreach ($name in @('ViperTray-windows-x64.zip')) {
             $local = (Get-FileHash -LiteralPath (Join-Path 'dist' $name) -Algorithm SHA256).Hash
             $uploaded = (Get-FileHash -LiteralPath (Join-Path $downloadPath $name) -Algorithm SHA256).Hash
             if ($local -cne $uploaded) { throw "Uploaded asset checksum mismatch: $name" }

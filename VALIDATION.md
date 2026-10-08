@@ -59,4 +59,4 @@ The full wireless menu-control suite was rerun after the release fixes: all 512 
 
 DPI stage menus now use the same frozen snapshot for every entry, preventing a disconnect during menu construction from invalidating stage indexing. Preset completion rereads both DPI and stages. Repeated log rotation replaces the previous file on Windows, and preference-save failures appear in the menu. Menu placement is left entirely to Windows.
 
-The tag workflow runs formatting, unit tests and strict Clippy, checks the Cargo/tag version, builds Windows downloads, compares every uploaded asset with the local SHA-256 hash, and only then publishes the release.
+The tag workflow runs formatting, unit tests and strict Clippy, checks the Cargo/tag version, builds the portable Windows ZIP, requires exactly one uploaded ZIP asset, compares it with the local SHA-256 hash, and only then publishes the release.
