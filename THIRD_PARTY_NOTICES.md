@@ -17,3 +17,7 @@ These upstream driver files identify their license as GPL-2.0-or-later. Copyrigh
 Direct dependencies: `hidapi` (MIT; native backend), `windows-sys` (MIT OR Apache-2.0), `serde` (MIT OR Apache-2.0), and `serde_json` (MIT OR Apache-2.0). Exact versions and transitive dependencies are in Cargo.lock. Dependency license metadata and notices are in their published source packages. The release source is supplied alongside the local executable.
 
 The Corsair Elite Display and RazerBatteryTaskbar repositories are interaction/design references only. Their application code is not bundled or copied into this repository.
+
+## Battery artwork
+
+The battery PNG assets and derived BGRA data in `assets/battery` originate from [Tekk-Know/RazerBatteryTaskbar](https://github.com/Tekk-Know/RazerBatteryTaskbar). See `assets/battery/README.md` for attribution and the upstream license status.

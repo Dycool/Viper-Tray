@@ -10,7 +10,7 @@ Verified:
 - Five DPI stages read back as 400, 800, 1,600, 2,400 and 3,200 on both axes, with stage 5 active.
 - The tray process starts and remains running. No diagnostic errors were logged at the initial observation.
 
-Interactive testing is in progress. The user is checking the native menu and wireless movement, with 1,000 Hz polling and 15-minute sleep selected through the menu. Successful setting writes and absence of movement freezes have not yet been confirmed.
+Interactive testing is in progress. The user reported that the tray menu opened with blank labels. The menu owner now forwards reentrant Windows painting messages to the default handler instead of swallowing them. The app has been rebuilt and restarted with the original RazerBatteryTaskbar battery icon artwork; user verification of the labels is pending. Successful setting writes and absence of movement freezes have not yet been confirmed.
 
 Pending:
 

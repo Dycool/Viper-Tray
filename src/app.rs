@@ -800,41 +800,27 @@ fn set_startup(enabled: bool) -> Result<()> {
     }
 }
 
-fn make_icon(battery: Option<u8>, charging: bool, available: bool) -> HICON {
-    let mut pixels = vec![0u8; 32 * 32 * 4];
-    let mut rect = |x0: usize, y0: usize, x1: usize, y1: usize, color: [u8; 3]| {
-        for y in y0..y1 {
-            for x in x0..x1 {
-                let i = (y * 32 + x) * 4;
-                pixels[i..i + 4].copy_from_slice(&[color[2], color[1], color[0], 255]);
-            }
-        }
-    };
-    let white = [225, 235, 235];
-    rect(3, 7, 27, 9, white);
-    rect(3, 23, 27, 25, white);
-    rect(3, 9, 5, 23, white);
-    rect(25, 9, 27, 23, white);
-    rect(27, 12, 30, 20, white);
-    if let Some(b) = battery {
-        let color = if !available {
-            [120, 140, 140]
-        } else if b <= 15 {
-            [255, 75, 75]
-        } else {
-            [60, 225, 125]
-        };
-        let width = (b as usize * 18).div_ceil(100).min(18);
-        rect(6, 10, 6 + width, 22, color);
+// Original battery artwork from Tekk-Know/RazerBatteryTaskbar; see assets/battery/README.md.
+const BATTERY_PIXELS: [&[u8; 4096]; 11] = [
+    include_bytes!("../assets/battery/battery_0.bgra"),
+    include_bytes!("../assets/battery/battery_10.bgra"),
+    include_bytes!("../assets/battery/battery_20.bgra"),
+    include_bytes!("../assets/battery/battery_30.bgra"),
+    include_bytes!("../assets/battery/battery_40.bgra"),
+    include_bytes!("../assets/battery/battery_50.bgra"),
+    include_bytes!("../assets/battery/battery_60.bgra"),
+    include_bytes!("../assets/battery/battery_70.bgra"),
+    include_bytes!("../assets/battery/battery_80.bgra"),
+    include_bytes!("../assets/battery/battery_90.bgra"),
+    include_bytes!("../assets/battery/battery_100.bgra"),
+];
+fn make_icon(battery: Option<u8>, _charging: bool, available: bool) -> HICON {
+    let level = if available {
+        battery.unwrap_or(0).min(100) / 10
     } else {
-        rect(13, 12, 16, 17, white);
-        rect(13, 19, 16, 21, white);
-    }
-    if charging {
-        rect(16, 4, 19, 14, [255, 220, 30]);
-        rect(13, 13, 19, 17, [255, 220, 30]);
-        rect(13, 16, 16, 27, [255, 220, 30]);
-    }
+        0
+    };
+    let pixels = BATTERY_PIXELS[level as usize];
     let mut mask = [0xffu8; 128];
     for y in 0..32 {
         for x in 0..32 {
@@ -871,7 +857,12 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, w: WPARAM, l: LPARAM) ->
     // Native popup menus pump messages. RefCell prevents overlapping mutable
     // app references when timer or shell callbacks arrive while a menu is open.
     let Ok(mut app) = cell.try_borrow_mut() else {
-        return 0;
+        // Popup tracking reenters the owner window for native menu painting.
+        // Let Windows process those messages without borrowing App again.
+        if matches!(msg, WM_TIMER | CALLBACK | SHOW_MENU) {
+            return 0;
+        }
+        return unsafe { DefWindowProcW(hwnd, msg, w, l) };
     };
     if msg == app.taskbar && app.taskbar != 0 {
         app.add_icon();
