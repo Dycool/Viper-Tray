@@ -116,15 +116,20 @@ impl Config {
     }
 }
 pub fn log(message: &str) {
+    log_to(&directory(), message);
+}
+fn log_to(dir: &std::path::Path, message: &str) {
     use std::io::Write;
-    let dir = directory();
-    let _ = std::fs::create_dir_all(&dir);
+    let _ = std::fs::create_dir_all(dir);
     let path = dir.join("diagnostics.log");
     if std::fs::metadata(&path)
         .map(|m| m.len() > 512_000)
         .unwrap_or(false)
     {
-        let _ = std::fs::rename(&path, dir.join("diagnostics.previous.log"));
+        let previous = dir.join("diagnostics.previous.log");
+        // Windows rename cannot overwrite the previous rotation.
+        let _ = std::fs::remove_file(&previous);
+        let _ = std::fs::rename(&path, previous);
     }
     if let Ok(mut f) = std::fs::OpenOptions::new()
         .create(true)
@@ -141,6 +146,31 @@ pub fn log(message: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn repeated_log_rotation_replaces_the_previous_file_on_windows() {
+        let dir = std::env::temp_dir().join(format!(
+            "viper-log-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&dir).unwrap();
+        let path = dir.join("diagnostics.log");
+        for marker in [b'A', b'B', b'C'] {
+            std::fs::write(&path, vec![marker; 512_001]).unwrap();
+            log_to(&dir, "Recovered");
+            let previous = std::fs::read(dir.join("diagnostics.previous.log")).unwrap();
+            assert_eq!(previous, vec![marker; 512_001]);
+            let current = std::fs::read_to_string(&path).unwrap();
+            assert!(current.contains("Recovered"));
+            assert!(current.len() < 100);
+        }
+        std::fs::remove_file(path).unwrap();
+        std::fs::remove_file(dir.join("diagnostics.previous.log")).unwrap();
+        std::fs::remove_dir(dir).unwrap();
+    }
     #[test]
     fn incomplete_snapshot_cannot_be_saved_as_preset() {
         assert!(Preset::capture(&Snapshot::default(), None).is_err());

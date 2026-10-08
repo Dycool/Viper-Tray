@@ -1,6 +1,6 @@
 use crate::{
     config::{self, Config, Lighting, Preset},
-    protocol::{Effect, Result},
+    protocol::{DpiStages, Effect, Result},
     worker::{Command, Worker},
 };
 use std::{
@@ -152,7 +152,7 @@ impl App {
     }
     fn save_config(&mut self) {
         if let Err(e) = self.config.save() {
-            config::log(&e);
+            self.record_error(&format!("Could not save app settings: {e}"));
         }
     }
     fn item(&mut self, menu: HMENU, label: &str, action: Action, enabled: bool, checked: bool) {
@@ -188,7 +188,7 @@ impl App {
         current: [u16; 2],
         axis: Option<usize>,
         enabled: bool,
-        stage: Option<usize>,
+        stage: Option<(usize, &DpiStages)>,
     ) {
         let m = self.submenu(menu, label);
         let values = [
@@ -221,18 +221,10 @@ impl App {
         xy: [u16; 2],
         checked: bool,
         enabled: bool,
-        stage: Option<usize>,
+        stage: Option<(usize, &DpiStages)>,
     ) {
-        let c = if let Some(i) = stage {
-            let mut stages = self
-                .worker
-                .state
-                .lock()
-                .unwrap()
-                .mouse
-                .stages
-                .clone()
-                .unwrap();
+        let c = if let Some((i, snapshot)) = stage {
+            let mut stages = snapshot.clone();
             stages.values[i] = xy;
             Command::Stages(stages)
         } else {
@@ -377,9 +369,30 @@ impl App {
                     ready,
                     stages.active as usize == i + 1,
                 );
-                self.dpi_menu(q, "Set DPI", stages.values[i], None, ready, Some(i));
-                self.dpi_menu(q, "X axis", stages.values[i], Some(0), ready, Some(i));
-                self.dpi_menu(q, "Y axis", stages.values[i], Some(1), ready, Some(i));
+                self.dpi_menu(
+                    q,
+                    "Set DPI",
+                    stages.values[i],
+                    None,
+                    ready,
+                    Some((i, stages)),
+                );
+                self.dpi_menu(
+                    q,
+                    "X axis",
+                    stages.values[i],
+                    Some(0),
+                    ready,
+                    Some((i, stages)),
+                );
+                self.dpi_menu(
+                    q,
+                    "Y axis",
+                    stages.values[i],
+                    Some(1),
+                    ready,
+                    Some((i, stages)),
+                );
             }
             let q = self.submenu(p, "Number of stages");
             for count in 1..=5 {
@@ -706,6 +719,12 @@ fn startup_enabled() -> bool {
     }
 }
 fn set_startup(enabled: bool) -> Result<()> {
+    let command = if enabled {
+        let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+        Some(wide(&format!("\"{}\"", exe.display())))
+    } else {
+        None
+    };
     unsafe {
         let mut key = null_mut();
         if RegCreateKeyExW(
@@ -722,9 +741,7 @@ fn set_startup(enabled: bool) -> Result<()> {
         {
             return Err("Could not open Windows startup settings".into());
         }
-        let result = if enabled {
-            let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-            let s = wide(&format!("\"{}\"", exe.display()));
+        let result = if let Some(s) = command {
             RegSetValueExW(
                 key,
                 wide("ViperTray").as_ptr(),

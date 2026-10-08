@@ -88,9 +88,11 @@ impl Worker {
                                 // DPI and stage selection can affect each other.
                                 let related = match c {
                                     Command::Dpi(_) => m.stages().map(|v| snap.stages = Some(v)),
-                                    Command::Stages(_) | Command::Preset(_) => {
-                                        m.dpi().map(|v| snap.dpi = Some(v))
-                                    }
+                                    Command::Stages(_) => m.dpi().map(|v| snap.dpi = Some(v)),
+                                    Command::Preset(_) => m.dpi().and_then(|v| {
+                                        snap.dpi = Some(v);
+                                        m.stages().map(|v| snap.stages = Some(v))
+                                    }),
                                     _ => Ok(()),
                                 };
                                 if let Err(e) = related {

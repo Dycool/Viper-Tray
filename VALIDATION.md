@@ -22,12 +22,12 @@ Tested on Windows with a wireless Razer Viper Ultimate, firmware 1.7, on 2026-10
 | Tray lifecycle | Actual native icon registered; icon deletion plus TaskbarCreated restored it; second instance returned; close removed the icon/window and joined the worker |
 | Invalid input | Invalid polling, sleep, threshold, brightness, DPI, stages, and malformed preset rejected |
 | Timeout/cancellation | A real pending Windows named-pipe operation timed out, cancelled, and released its request buffers |
-| Layout | Screen-edge and negative-monitor coordinate tests reserve room for a complete submenu path |
+| Layout | Native Windows positioning; custom submenu spacing and forced-left flags removed |
 | Notifications | No balloon, toast, or message-box notification path in application source |
 
 The complete wireless control suite passed **423 initial menu commands plus 89 dual-color commands: 512 menu-generated hardware actions**. Preset, restoration, and error-validation checks ran in addition. All original readable mouse values were independently reread after restoration: 1,000 Hz, 900-second sleep, raw threshold 13, brightness 0, 3,200 × 3,200 DPI, and the original five stages with stage 5 active. User preferences/presets were isolated from test writes.
 
-**Twelve ordinary software tests pass.** Four integration/recovery tests are ignored by default. Formatter, strict Clippy, and release build are checked separately. Hardware tests are never enabled in GitHub Actions.
+**Twelve ordinary software tests pass for v1.0.0, including repeated Windows log rotation.** Four integration/recovery tests are ignored by default. Formatter, strict Clippy, and release build are checked separately. Hardware tests are never enabled in GitHub Actions.
 
 ## Failure found and fixed
 
@@ -52,3 +52,11 @@ With explicit authorization to temporarily change an awake wireless mouse:
 ```powershell
 ./scripts/test-hardware.ps1
 ```
+
+## v1.0.0 release review
+
+The full wireless menu-control suite was rerun after the release fixes: all 512 commands, five presets, restoration, startup toggling, native tray recovery/exit, and unchanged-polling latency passed. The three latency samples were 33, 32, and 32 ms. Original readable mouse settings and the startup entry were restored; test preferences stayed isolated.
+
+DPI stage menus now use the same frozen snapshot for every entry, preventing a disconnect during menu construction from invalidating stage indexing. Preset completion rereads both DPI and stages. Repeated log rotation replaces the previous file on Windows, and preference-save failures appear in the menu. Menu placement is left entirely to Windows.
+
+The tag workflow runs formatting, unit tests and strict Clippy, checks the Cargo/tag version, builds Windows downloads, compares every uploaded asset with the local SHA-256 hash, and only then publishes the release.

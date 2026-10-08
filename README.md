@@ -23,18 +23,18 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 
 ## Quick Start
 
-1. Download the Windows artifact from a completed [build in Actions](https://github.com/Dycool/Viper-Tray/actions/workflows/ci.yml).
+1. Download the portable Windows ZIP from the [latest release](https://github.com/Dycool/Viper-Tray/releases/latest).
 2. Extract `ViperTray-windows-x64.zip` and run `viper-tray.exe`.
 3. Find the battery icon beside the clock; Windows may put it in the tray overflow.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
 5. Choose **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
-The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus. The main menu moves inward from the screen edge as needed to leave space for nested menus.
+The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus. Windows positions the main menu and its submenus.
 
 The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
 
 > [!NOTE]
-> Tested on a wireless Viper Ultimate: 512 menu-generated hardware commands, all five presets, startup toggling, and the native tray lifecycle. Twelve software tests pass. Lighting is verified by device acknowledgement; visual appearance and long sleep/reconnect behavior require physical observation. See [VALIDATION.md](VALIDATION.md).
+> Tested on a wireless Viper Ultimate: 512 menu-generated hardware commands, all five presets, startup toggling, and the native tray lifecycle. Software checks and hardware test coverage are documented below. Lighting is verified by device acknowledgement; visual appearance and long sleep/reconnect behavior require physical observation. See [VALIDATION.md](VALIDATION.md).
 
 ## Supported Mouse
 
@@ -93,7 +93,7 @@ Create the portable ZIP, source archive, and checksums:
 - **Draft release** — pushing a version tag such as `v0.1.0` builds the matching Cargo version and creates a draft GitHub release with the same downloads.
 - **Tests and checks** — formatting, unit tests, and strict Clippy run automatically on pushes, pull requests, and manual builds. Device and tray integration tests are opt-in and never run in CI.
 
-Workflows do not launch the tray app or perform hardware queries. Tags create drafts so the downloads can be reviewed before publication.
+Workflows do not launch the tray app or perform hardware queries. Release downloads are published only after checks and upload verification succeed.
 
 ## How It Works
 
