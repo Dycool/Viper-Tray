@@ -282,8 +282,11 @@ impl App {
             self.label(m, &line);
         }
         self.separator(m);
+        let performance = self.submenu(m, "Performance");
+        let power = self.submenu(m, "Power");
+        let appearance = self.submenu(m, "Lighting");
         let p = self.submenu(
-            m,
+            performance,
             &format!(
                 "Polling rate{}",
                 s.polling.map(|v| format!(": {v} Hz")).unwrap_or_default()
@@ -299,7 +302,7 @@ impl App {
             );
         }
         let p = self.submenu(
-            m,
+            power,
             &format!(
                 "Idle sleep{}",
                 s.idle
@@ -321,7 +324,7 @@ impl App {
             );
         }
         let p = self.submenu(
-            m,
+            power,
             &format!(
                 "Low-battery mode threshold{}",
                 s.threshold
@@ -340,7 +343,7 @@ impl App {
             );
         }
         let p = self.submenu(
-            m,
+            performance,
             &format!(
                 "DPI{}",
                 s.dpi
@@ -355,7 +358,7 @@ impl App {
         } else {
             self.label(p, "Connect cable and refresh to read DPI");
         }
-        let p = self.submenu(m, "DPI stages");
+        let p = self.submenu(performance, "DPI stages");
         if let Some(stages) = &s.stages {
             for i in 0..stages.values.len() {
                 let q = self.submenu(
@@ -397,7 +400,7 @@ impl App {
             self.label(p, "DPI stages unavailable");
         }
         let p = self.submenu(
-            m,
+            appearance,
             &format!(
                 "Logo brightness{}",
                 s.brightness
@@ -415,8 +418,8 @@ impl App {
             );
         }
         let lighting = self.config.lighting.clone().unwrap_or_default();
-        let p = self.submenu(m, "Logo lighting");
-        self.label(p, "Effect selection is saved by this app");
+        let p = appearance;
+        let effects = self.submenu(p, "Effect");
         for (label, e) in [
             ("Off", Effect::Off),
             ("Static", Effect::Static),
@@ -429,15 +432,16 @@ impl App {
             let mut next = lighting.clone();
             next.effect = e;
             self.item(
-                p,
+                effects,
                 label,
                 Action::Device(Command::Lighting(next)),
                 ready,
                 self.config.lighting.as_ref().map(|l| l.effect) == Some(e),
             );
         }
+        let colors = self.submenu(p, "Colors");
         for second in [false, true] {
-            let q = self.submenu(p, if second { "Second color" } else { "Color" });
+            let q = self.submenu(colors, if second { "Secondary" } else { "Primary" });
             for (name, c) in [
                 ("Green", [0, 255, 0]),
                 ("Cyan", [0, 220, 255]),
@@ -467,9 +471,10 @@ impl App {
                     },
                 );
             }
+            self.separator(q);
+            let custom = self.submenu(q, "Custom RGB");
             for channel in 0..3 {
-                let rgb =
-                    self.submenu(q, ["Red channel", "Green channel", "Blue channel"][channel]);
+                let rgb = self.submenu(custom, ["Red", "Green", "Blue"][channel]);
                 for delta in [-1i16, 1] {
                     let mut next = lighting.clone();
                     let target = if second {
@@ -515,7 +520,6 @@ impl App {
                 lighting.speed == speed,
             );
         }
-        self.separator(m);
         let p = self.submenu(m, "Saved presets");
         for i in 0..5 {
             let q = self.submenu(
@@ -552,14 +556,16 @@ impl App {
                 false,
             );
         }
+        self.separator(m);
+        let app_menu = self.submenu(m, "App & help");
         self.item(
-            m,
+            app_menu,
             "Refresh mouse settings",
             Action::Device(Command::Refresh),
             !busy,
             false,
         );
-        let p = self.submenu(m, "Battery checks");
+        let p = self.submenu(app_menu, "Battery checks");
         for (v, label) in [
             (0, "Manual only"),
             (60, "Every minute"),
@@ -575,13 +581,14 @@ impl App {
             );
         }
         self.item(
-            m,
+            app_menu,
             "Start with Windows",
             Action::Startup,
             true,
             startup_enabled(),
         );
-        let p = self.submenu(m, "About & diagnostics");
+        self.separator(app_menu);
+        let p = self.submenu(app_menu, "About & diagnostics");
         self.label(p, "Viper Tray 0.1.0 · Rust · GPL-2.0-or-later");
         if let Some(f) = s.firmware {
             self.label(p, &format!("Firmware: {f}"));
