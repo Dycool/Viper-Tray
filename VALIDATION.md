@@ -10,7 +10,7 @@ Verified:
 - Five DPI stages read back as 400, 800, 1,600, 2,400 and 3,200 on both axes, with stage 5 active.
 - The tray process starts and remains running. No diagnostic errors were logged at the initial observation.
 
-Interactive testing is in progress. The user reported that the tray menu opened with blank labels. The menu owner now forwards reentrant Windows painting messages to the default handler instead of swallowing them. The app has been rebuilt and restarted with the original RazerBatteryTaskbar battery icon artwork; user verification of the labels is pending. Successful setting writes and absence of movement freezes have not yet been confirmed.
+Interactive testing is in progress. The user reported that the tray menu opened with blank labels. The menu owner now forwards reentrant Windows painting messages to the default handler instead of swallowing them. The app was rebuilt and restarted with the original RazerBatteryTaskbar battery icon artwork. The user subsequently reported that it seems to be working fine. This is a user-observed smoke test; systematic setting write/readback and prolonged freeze testing remain pending. The settings-read age line was removed from the menu at the user's request.
 
 Pending:
 

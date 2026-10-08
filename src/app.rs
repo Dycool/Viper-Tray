@@ -262,9 +262,9 @@ impl App {
     }
     fn menu(&mut self) {
         self.actions.clear();
-        let (s, busy, updated) = {
+        let (s, busy) = {
             let st = self.worker.state.lock().unwrap();
-            (st.mouse.clone(), st.busy || self.pending, st.updated)
+            (st.mouse.clone(), st.busy || self.pending)
         };
         let ready = s.accessible && !busy;
         let m = unsafe { CreatePopupMenu() };
@@ -295,9 +295,6 @@ impl App {
                 }
             ),
         );
-        if let Some(t) = updated {
-            self.label(m, &format!("Settings read {}s ago", t.elapsed().as_secs()));
-        }
         if let Some(e) = &s.error {
             let line: String = e.chars().take(85).collect();
             self.label(m, &line);
