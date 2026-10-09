@@ -38,7 +38,7 @@ jobs:
         with:
           name: ViperTray-windows-x64
           path: |
-            dist/viper-tray.exe
+            dist/Viper-tray.exe
             dist/ViperTray-windows-x64.zip
             dist/viper-tray-source.zip
             dist/SHA256SUMS.txt

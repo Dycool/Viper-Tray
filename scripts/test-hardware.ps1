@@ -6,7 +6,7 @@ $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $entry = (Get-ItemProperty -LiteralPath $runKey).PSObject.Properties['ViperTray']
 $originalValue = if ($entry) { [string]$entry.Value } else { $null }
 $originalKind = if ($entry) { (Get-Item -LiteralPath $runKey).GetValueKind('ViperTray') } else { $null }
-$runningApps = @(Get-Process viper-tray -ErrorAction SilentlyContinue)
+$runningApps = @(Get-Process | Where-Object ProcessName -IEQ 'viper-tray')
 $restartPaths = @($runningApps | ForEach-Object Path | Sort-Object -Unique)
 Push-Location $repoPath
 try {

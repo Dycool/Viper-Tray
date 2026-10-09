@@ -69,6 +69,8 @@ jobs:
               throw 'This release is already published; refusing to replace its assets'
             }
             gh release upload $env:RELEASE_TAG @assets --clobber
+            if ($LASTEXITCODE -ne 0) { throw 'Could not upload the replacement ZIP' }
+            gh release edit $env:RELEASE_TAG --notes-file docs/release-notes.md
           } else {
             gh release create $env:RELEASE_TAG @assets --draft --verify-tag --title "Viper-Tray $env:RELEASE_TAG" --notes-file docs/release-notes.md
           }

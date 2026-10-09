@@ -4,7 +4,7 @@ A small **native Rust Windows notification-area app** for the Razer Viper Ultima
 
 ## Use
 
-Run `viper-tray.exe`, then right-click its battery icon beside the Windows clock. Windows may place it in the tray overflow initially. Hover for battery percentage, charging status, and connection information.
+Run `Viper-tray.exe`, then right-click its battery icon beside the Windows clock. Windows may place it in the tray overflow initially. Hover for battery percentage, charging status, and connection information.
 
 The app reads the device on connection and displays the last confirmed settings. Use **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button. Mouse settings are never automatically overwritten at startup or reconnect.
 
@@ -57,7 +57,7 @@ Windows 10/11 x64, stable Rust (2024 edition), and MSVC build tools are required
 cargo build --release --locked
 ```
 
-The executable is `target\release\viper-tray.exe`. Run `scripts/package.ps1` to prepare `dist/ViperTray-windows-x64.zip` with documentation and committed source. The executable is portable; documentation is included in the archive.
+The executable is `target\release\viper-tray.exe`. Run `scripts/package.ps1` to prepare `dist/ViperTray-windows-x64.zip` containing only `Viper-tray.exe`. Its icon, tray artwork, notices, and runtime are embedded; no external assets are needed.
 
 For maintainers (the ordinary tests do not query the mouse):
 

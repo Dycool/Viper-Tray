@@ -24,14 +24,14 @@ No Synapse, Electron, WebView, or bundled application runtime is required.
 ## Quick Start
 
 1. Download the portable Windows ZIP from the [latest release](https://github.com/Dycool/Viper-Tray/releases/latest).
-2. Extract `ViperTray-windows-x64.zip` and run `viper-tray.exe`.
+2. Extract `ViperTray-windows-x64.zip` and run `Viper-tray.exe`.
 3. Find the battery icon beside the clock; Windows may put it in the tray overflow.
 4. Right-click the icon to change mouse settings. Hover for battery percentage and connection status.
 5. Choose **Settings → Refresh mouse settings** after changing settings elsewhere or pressing the mouse's DPI button.
 
 The main menu groups controls into **Performance**, **Power**, **Lighting**, **Saved presets**, and **Settings**. Lighting effects, colors, and custom RGB values have their own submenus. Windows positions the main menu and its submenus.
 
-The app has no main window and never sends notifications. The executable is portable; the included documentation describes the supported controls.
+The app has no main window and never sends notifications. The ZIP contains only `Viper-tray.exe`. Icons and notices are embedded in the executable; no external assets are needed.
 
 > [!NOTE]
 > Tested on a wireless Viper Ultimate: 512 menu-generated hardware commands, all five presets, startup toggling, and the native tray lifecycle. Software checks and hardware test coverage are documented below. Lighting is verified by device acknowledgement; visual appearance and long sleep/reconnect behavior require physical observation. See [VALIDATION.md](VALIDATION.md).

@@ -14,7 +14,7 @@ These upstream driver files identify their license as GPL-2.0-or-later. Copyrigh
 
 ## Rust dependencies
 
-Direct dependencies: `windows-sys` (MIT OR Apache-2.0), `serde` (MIT OR Apache-2.0), and `serde_json` (MIT OR Apache-2.0). Exact versions and transitive dependencies are in Cargo.lock. Dependency license metadata and notices are in their published source packages. The release source is supplied alongside the local executable.
+Direct dependencies: `windows-sys` (MIT OR Apache-2.0), `serde` (MIT OR Apache-2.0), and `serde_json` (MIT OR Apache-2.0). Exact versions and transitive dependencies are in Cargo.lock. Dependency license metadata and notices are in their published source packages. Corresponding source is available in the GitHub repository linked in the release notes. The build-time resource compiler `winresource` is MIT licensed.
 
 RazerBatteryTaskbar is an interaction/design reference. Its application code is not bundled or copied into this repository.
 

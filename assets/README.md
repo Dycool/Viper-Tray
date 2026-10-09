@@ -5,3 +5,5 @@
 Final edit prompt:
 
 > Remove only the white background from this provided Razer Viper Ultimate mouse product image and replace it with actual alpha transparency. Preserve the mouse exactly: its top-down orientation, shape, proportions, black surface details, wheel, buttons, texture and green Razer logo. Preserve its centered square framing. Clean precise antialiased edges with no white halo. Do not redraw, redesign, add shadows, or add any text. Output transparent PNG suitable for a GitHub README header.
+
+`viper-ultimate.ico` packages the same image at standard Windows icon sizes and is compiled into the executable.
