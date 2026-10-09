@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.2
         with:
           name: ViperTray-${{ github.ref_name }}-windows-x64
-          path: dist/ViperTray-windows-x64.zip
+          path: dist/Viper-tray.exe
           if-no-files-found: error
       - name: Create or update draft release
         env:

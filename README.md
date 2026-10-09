@@ -89,7 +89,7 @@ Create the portable ZIP, source archive, and checksums:
 
 ## GitHub Workflows
 
-- **Windows build** — builds and packages pushes to `main`, pull requests, and manual runs; uploads the executable, portable ZIP, source ZIP, and checksums.
+- **Windows build** — builds and packages pushes to `main`, pull requests, and manual runs; uploads only `Viper-tray.exe`, so the Actions artifact ZIP contains only the executable.
 - **Release** — pushing a version tag such as `v1.0.0` checks the matching Cargo version, runs software checks, verifies the uploaded ZIP, and publishes only `ViperTray-windows-x64.zip`.
 - **Tests and checks** — formatting, unit tests, and strict Clippy run automatically on pushes, pull requests, and manual builds. Device and tray integration tests are opt-in and never run in CI.
 

@@ -37,11 +37,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.2
         with:
           name: ViperTray-windows-x64
-          path: |
-            dist/Viper-tray.exe
-            dist/ViperTray-windows-x64.zip
-            dist/viper-tray-source.zip
-            dist/SHA256SUMS.txt
+          path: dist/Viper-tray.exe
           if-no-files-found: error
           retention-days: 14
 

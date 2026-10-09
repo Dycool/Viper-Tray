@@ -41,7 +41,7 @@ try {
     $archive.Dispose()
 }
 
-# Separate source/checksum files are CI artifacts, never included in the portable ZIP.
+# Separate developer source/checksum outputs are never included in the portable ZIP.
 $sourceArchive = Join-Path $outputPath 'viper-tray-source.zip'
 git -C $repoPath archive --format=zip "--output=$sourceArchive" HEAD
 if ($LASTEXITCODE -ne 0) { throw 'Could not package the committed source' }
